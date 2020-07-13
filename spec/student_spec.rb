@@ -48,7 +48,24 @@ describe "Student" do
     end
   end
 
+  describe "#save" do
+    it 'saves an instance of the Student class to the database and then sets the given students `id` attribute' do
+      sarah = Student.new("Sarah", "9th")
+      sarah.save
+      expect(DB[:conn].execute("SELECT * FROM students")).to eq([[1, "Sarah", "9th"]])
+      expect(sarah.id).to eq(1)
+    end
 
+    it 'updates a record if called on an object that is already persisted' do
+      jane = Student.new("Jane", "11th")
+      jane.save
+      jane_id = jane.id
+      jane.name = "Jane Smith"
+      jane.save
+      jane_from_db = DB[:conn].execute("SELECT * FROM students WHERE id = ?", jane_id)
+      expect(jane_from_db[0][1]).to eq("Jane Smith")
+    end
+  end
 
   describe ".create" do
     it 'creates a student with two attributes, name and grade, and saves it into the students table.' do
@@ -68,5 +85,25 @@ describe "Student" do
     end
   end
 
+  describe '.find_by_name' do
+    it 'returns an instance of student that matches the name from the DB' do
+      josh.save
+      josh_id = josh.id
+      josh_from_db = Student.find_by_name("Josh")
+      expect(josh_from_db.name).to eq("Josh")
+      expect(josh_from_db.grade).to eq("9th")
+      expect(josh_from_db.id).to eq(josh_id)
+      expect(josh_from_db).to be_an_instance_of(Student)
+    end
+  end
 
+  describe '#update' do
+    it 'updates the record associated with a given instance' do
+      josh.save
+      josh.name = "Josh Jr."
+      josh.update
+      josh_jr = Student.find_by_name("Josh Jr.")
+      expect(josh_jr.id).to eq(josh.id)
+    end
+  end
 end
