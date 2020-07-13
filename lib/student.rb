@@ -47,7 +47,7 @@ class Student
   
   
   def self.drop_table
-    
+    sql = "DROP TABLE IF EXISTS"
   end
   
   def self.new_from_db(row)
